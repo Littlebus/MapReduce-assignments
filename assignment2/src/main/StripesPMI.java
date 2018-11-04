@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -108,20 +109,30 @@ public class StripesPMI extends Configured implements Tool {
       String line = value.toString();
       StringTokenizer t = new StringTokenizer(line);
 
-      // Need to pass through multiple times so put tokens into array
-      List<String> terms = new ArrayList<String>();
+      Set<String> sortedTerms = new TreeSet<String>();
       while(t.hasMoreTokens()){
-        terms.add(t.nextToken());
+        sortedTerms.add(t.nextToken());
       }
-
 
       String left = "";
       String right = "";
-      for(int leftTermIndex = 0; leftTermIndex < terms.size(); leftTermIndex++){
-        left = terms.get(leftTermIndex);
 
-        for(int rightTermIndex = leftTermIndex + 1; rightTermIndex < terms.size(); rightTermIndex++) {
-          right = terms.get(rightTermIndex);
+      String[] terms = new String[sortedTerms.size()]; 
+      sortedTerms.toArray(terms);
+//      // Need to pass through multiple times so put tokens into array
+//      List<String> terms = new ArrayList<String>();
+//      while(t.hasMoreTokens()){
+//        terms.add(t.nextToken());
+//      }
+//
+//
+//      String left = "";
+//      String right = "";
+      for(int leftTermIndex = 0; leftTermIndex < terms.length; leftTermIndex++){
+        left = terms[leftTermIndex];
+
+        for(int rightTermIndex = leftTermIndex + 1; rightTermIndex < terms.length; rightTermIndex++) {
+          right = terms[rightTermIndex];
 
           if(!MAP.containsKey(right)){
             MAP.put(right, 1);
@@ -165,6 +176,7 @@ public class StripesPMI extends Configured implements Tool {
 
       }
       context.write(term, MAP);
+      MAP.clear();
     }
   }
 
@@ -175,7 +187,7 @@ public class StripesPMI extends Configured implements Tool {
     private static Map<String, Integer> MAP = new HashMap<String, Integer>();
     private static PairOfStrings PAIR = new PairOfStrings();
     private static DoubleWritable PMI = new DoubleWritable();
-    private static double totalDocs = 156215;
+    private static double totalDocs = 10.0;
 
     @Override
     public void setup(Context context) throws IOException{
@@ -185,7 +197,7 @@ public class StripesPMI extends Configured implements Tool {
       FileSystem fs = FileSystem.get(conf);
 
       //      Path inFile = new Path(conf.get("intermediatePath"));
-      Path inFile = new Path("/Users/chris/Projects/UMD/MapReduce-assignments/assignment2/appearance_totals_stripes/part-r-00000");
+      Path inFile = new Path("/home/zhenhui/tmp/appearance_totals_stripes/part-r-00000");
 
       if(!fs.exists(inFile)){
         throw new IOException("File Not Found: " + inFile.toString());
@@ -207,7 +219,7 @@ public class StripesPMI extends Configured implements Tool {
 
         String[] parts = line.split("\\s+");
         if(parts.length != 2){
-          LOG.info("Input line did not have exactly 2 tokens: '" + line + "'");
+          System.out.println("Input line did not have exactly 2 tokens: '" + line + "'");
         } else {
           termTotals.put(parts[0], Integer.parseInt(parts[1]));
         }
@@ -308,7 +320,7 @@ public class StripesPMI extends Configured implements Tool {
     //TODO This output path is for the 2nd job's.
     //    The fits job will have an intermediate output path from which the second job's reducer will read
     String outputPath = cmdline.getOptionValue(OUTPUT);
-    String intermediatePath = "/Users/chris/Projects/UMD/MapReduce-assignments/assignment2/appearance_totals_stripes";
+    String intermediatePath = "/home/zhenhui/tmp/appearance_totals_stripes";
 
 
 
@@ -316,10 +328,10 @@ public class StripesPMI extends Configured implements Tool {
     int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? 
         Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
 
-        LOG.info("Tool: " + StripesPMI.class.getSimpleName() + " Appearances Count");
-        LOG.info(" - input path: " + inputPath);
-        LOG.info(" - output path: " + intermediatePath);
-        LOG.info(" - number of reducers: " + reduceTasks);
+        System.out.println("Tool: " + StripesPMI.class.getSimpleName() + " Appearances Count");
+        System.out.println(" - input path: " + inputPath);
+        System.out.println(" - output path: " + intermediatePath);
+        System.out.println(" - number of reducers: " + reduceTasks);
 
         Configuration conf = getConf();
         conf.set("intermediatePath", intermediatePath);
@@ -346,14 +358,14 @@ public class StripesPMI extends Configured implements Tool {
 
         long startTime = System.currentTimeMillis();
         job1.waitForCompletion(true);
-        LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
 
         // Start second job
-        LOG.info("Tool: " + StripesPMI.class.getSimpleName() + " Stripes PMI Part");
-        LOG.info(" - input path: " + inputPath);
-        LOG.info(" - output path: " + outputPath);
-        LOG.info(" - number of reducers: " + reduceTasks);
+        System.out.println("Tool: " + StripesPMI.class.getSimpleName() + " Stripes PMI Part");
+        System.out.println(" - input path: " + inputPath);
+        System.out.println(" - output path: " + outputPath);
+        System.out.println(" - number of reducers: " + reduceTasks);
 
         Job job2 = Job.getInstance(conf);
         job2.setJobName(StripesPMI.class.getSimpleName() + " StripesPMICalcuation");
@@ -376,7 +388,7 @@ public class StripesPMI extends Configured implements Tool {
 
         startTime = System.currentTimeMillis();
         job2.waitForCompletion(true);
-        LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
 
         return 0;
