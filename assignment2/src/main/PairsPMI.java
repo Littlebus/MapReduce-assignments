@@ -118,7 +118,6 @@ public class PairsPMI extends Configured implements Tool {
 
       String[] terms = new String[sortedTerms.size()]; 
       sortedTerms.toArray(terms);
-
       for(int leftTermIndex = 0; leftTermIndex < terms.length; leftTermIndex++){
         for(int rightTermIndex = leftTermIndex + 1; rightTermIndex < terms.length; rightTermIndex++) {
           left = terms[leftTermIndex];
@@ -155,7 +154,7 @@ public class PairsPMI extends Configured implements Tool {
     private static Map<String, Integer> termTotals = new HashMap<String, Integer>();
     
     private static DoubleWritable PMI = new DoubleWritable();
-    private static double totalDocs = 156215.0;
+    private static double totalDocs = 10.0;
     
     @Override
     public void setup(Context context) throws IOException{
@@ -165,7 +164,7 @@ public class PairsPMI extends Configured implements Tool {
       FileSystem fs = FileSystem.get(conf);
       
 //      Path inFile = new Path(conf.get("intermediatePath"));
-      Path inFile = new Path("/Users/chris/Projects/UMD/MapReduce-assignments/assignment2/appearance_totals_pairs/part-r-00000");
+      Path inFile = new Path("/home/zhenhui/tmp/appearance_totals_pairs/part-r-00000");
 
       if(!fs.exists(inFile)){
         throw new IOException("File Not Found: " + inFile.toString());
@@ -187,7 +186,7 @@ public class PairsPMI extends Configured implements Tool {
         
         String[] parts = line.split("\\s+");
         if(parts.length != 2){
-          LOG.info("Input line did not have exactly 2 tokens: '" + line + "'");
+          System.out.println("Input line did not have exactly 2 tokens: '" + line + "'");
         } else {
           termTotals.put(parts[0], Integer.parseInt(parts[1]));
         }
@@ -208,8 +207,7 @@ public class PairsPMI extends Configured implements Tool {
       for(IntWritable value : values) {
         pairSum += value.get();
       }
-      
-      if(pairSum >= 10){
+      //if(pairSum >= 1){
 
         // Look up individual totals for each member of pair
         // Calculate PMI emit Pair or Text as key and Float as value
@@ -227,7 +225,7 @@ public class PairsPMI extends Configured implements Tool {
 
         PMI.set(pmi);
         context.write(pair, PMI);
-      }
+      //}
 
     }
 
@@ -274,17 +272,17 @@ public class PairsPMI extends Configured implements Tool {
     //TODO This output path is for the 2nd job's.
     //    The fits job will have an intermediate output path from which the second job's reducer will read
     String outputPath = cmdline.getOptionValue(OUTPUT);
-    String intermediatePath = "/Users/chris/Projects/UMD/MapReduce-assignments/assignment2/appearance_totals_pairs";
+    String intermediatePath = "/home/zhenhui/tmp/appearance_totals_pairs";
     
     
     
     int reduceTasks = cmdline.hasOption(NUM_REDUCERS) ? 
         Integer.parseInt(cmdline.getOptionValue(NUM_REDUCERS)) : 1;
 
-        LOG.info("Tool: " + PairsPMI.class.getSimpleName() + " Appearances Part");
-        LOG.info(" - input path: " + inputPath);
-        LOG.info(" - output path: " + intermediatePath);
-        LOG.info(" - number of reducers: " + reduceTasks);
+        System.out.println("Tool: " + PairsPMI.class.getSimpleName() + " Appearances Part");
+        System.out.println(" - input path: " + inputPath);
+        System.out.println(" - output path: " + intermediatePath);
+        System.out.println(" - number of reducers: " + reduceTasks);
 
         Configuration conf = getConf();
         conf.set("intermediatePath", intermediatePath);
@@ -311,15 +309,15 @@ public class PairsPMI extends Configured implements Tool {
 
         long startTime = System.currentTimeMillis();
         job1.waitForCompletion(true);
-        LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
         
         // Start second job
         
-        LOG.info("Tool: " + PairsPMI.class.getSimpleName() + " Pairs Part");
-        LOG.info(" - input path: " + inputPath);
-        LOG.info(" - output path: " + outputPath);
-        LOG.info(" - number of reducers: " + reduceTasks);
+        System.out.println("Tool: " + PairsPMI.class.getSimpleName() + " Pairs Part");
+        System.out.println(" - input path: " + inputPath);
+        System.out.println(" - output path: " + outputPath);
+        System.out.println(" - number of reducers: " + reduceTasks);
         
         Job job2 = Job.getInstance(conf);
         job2.setJobName(PairsPMI.class.getSimpleName() + " PairsPMICalcuation");
@@ -342,7 +340,7 @@ public class PairsPMI extends Configured implements Tool {
         
         startTime = System.currentTimeMillis();
         job2.waitForCompletion(true);
-        LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
         
         
         return 0;
