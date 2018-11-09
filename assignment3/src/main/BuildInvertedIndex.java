@@ -38,7 +38,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+//import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -103,6 +104,8 @@ public class BuildInvertedIndex extends Configured implements Tool {
       Collections.sort(postings);
 
       DF.set(df);
+      System.out.println(
+              new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings).toString());
       context.write(key,
           new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings));
     }
@@ -170,7 +173,7 @@ public class BuildInvertedIndex extends Configured implements Tool {
     job.setMapOutputValueClass(PairOfInts.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(PairOfWritables.class);
-    job.setOutputFormatClass(MapFileOutputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
 
     job.setMapperClass(MyMapper.class);
     job.setReducerClass(MyReducer.class);
