@@ -104,8 +104,8 @@ public class BuildInvertedIndex extends Configured implements Tool {
       Collections.sort(postings);
 
       DF.set(df);
-      System.out.println(
-              new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings).toString());
+      // System.out.println(
+      //        new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings).toString());
       context.write(key,
           new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings));
     }
