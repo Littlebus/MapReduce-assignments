@@ -37,6 +37,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 //import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
@@ -79,7 +80,9 @@ public class BuildInvertedIndex extends Configured implements Tool {
       // Emit postings.
       for (PairOfObjectInt<String> e : COUNTS) {
         WORD.set(e.getLeftElement());
-        context.write(WORD, new PairOfInts((int) docno.get(), e.getRightElement()));
+		String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+	    //System.out.println(Integer.parseInt(fileName));
+        context.write(WORD, new PairOfInts(Integer.parseInt(fileName), e.getRightElement()));
       }
     }
   }
@@ -104,8 +107,8 @@ public class BuildInvertedIndex extends Configured implements Tool {
       Collections.sort(postings);
 
       DF.set(df);
-      // System.out.println(
-      //        new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings).toString());
+//      System.out.println(
+//              new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings).toString());
       context.write(key,
           new PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>>(DF, postings));
     }
