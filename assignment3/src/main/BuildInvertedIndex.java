@@ -81,8 +81,9 @@ public class BuildInvertedIndex extends Configured implements Tool {
       for (PairOfObjectInt<String> e : COUNTS) {
         WORD.set(e.getLeftElement());
 		String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
-	    //System.out.println(Integer.parseInt(fileName));
-        context.write(WORD, new PairOfInts(Integer.parseInt(fileName), e.getRightElement()));
+		int fileindx = Integer.parseInt(fileName.split("-")[1].split("\\.")[0]);
+	    //System.out.println(fileindx);
+        context.write(WORD, new PairOfInts(fileindx, e.getRightElement()));
       }
     }
   }
